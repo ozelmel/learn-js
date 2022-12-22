@@ -26,6 +26,23 @@
       .task label.checked {
         text-decoration: line-through;
       }
+
+      .controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .filters span.active {
+        color: #3c87ff;
+      }
+
+      .filters span {
+        margin-right: 5px;
+        font-size: 15px;
+        column-rule-color: #444444;
+        cursor: pointer;
+      }
     </style>
     <title>Document</title>
   </head>
@@ -51,7 +68,12 @@
             </div>
           </div>
           <div class="card mt-3">
-            <div class="card-header">
+            <div class="card-header controls">
+              <div class="filters">
+                <span class="active" id="all">Hepsi</span>
+                <span id="pending">Yapılacaklar</span>
+                <span id="completed">Tamamlananlar</span>
+              </div>
               <button id="btnClear" class="btn btn-danger btn-sm float-end">
                 Temizle
               </button>
@@ -76,10 +98,11 @@
       let isEditTask = false;
       const taskInput = document.querySelector("#txtTaskName");
       const btnClear = document.querySelector("#btnClear");
+      const filters = document.querySelectorAll(".filters span");
 
-      displayTasks();
+      displayTasks("all");
 
-      function displayTasks() {
+      function displayTasks(filter) {
         let ul = document.getElementById("task-list");
         ul.innerHTML = "";
 
@@ -89,24 +112,26 @@
           for (let gorev of gorevListesi) {
             let completed = gorev.durum == "completed" ? "checked" : "";
 
-            let li = `<li class="task list-group-item">
-                        <div class="form-check">
-                        <input type="checkbox" onclick="updateStatus(this)" id="${gorev.id}" class="form-check-input" ${completed}>
-                        <label for="${gorev.id}" class="form-check-label ${completed}">${gorev.gorevAdi}</label>
-                        </div>
-                        <div class="dropdown">
-                            <button class="btn btn-link dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fa-solid fa-ellipsis"></i>
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                <li><a onclick="deleteTask(${gorev.id})" class="dropdown-item" href="#"><i class="fa-solid fa-trash"></i> Sil</a></li>
-                                <li><a onclick='editTask(${gorev.id}, "${gorev.gorevAdi}")' class="dropdown-item" href="#"><i class="fa-solid fa-pen"></i> Duzenle</a></li>
-                            </ul>
-                        </div>
-                  </li>
-        `;
-
+            if (filter == gorev.durum || filter == "all") {
+              let li = `<li class="task list-group-item">
+                            <div class="form-check">
+                            <input type="checkbox" onclick="updateStatus(this)" id="${gorev.id}" class="form-check-input" ${completed}>
+                            <label for="${gorev.id}" class="form-check-label ${completed}">${gorev.gorevAdi}</label>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-link dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa-solid fa-ellipsis"></i>
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                    <li><a onclick="deleteTask(${gorev.id})" class="dropdown-item" href="#"><i class="fa-solid fa-trash"></i> Sil</a></li>
+                                    <li><a onclick='editTask(${gorev.id}, "${gorev.gorevAdi}")' class="dropdown-item" href="#"><i class="fa-solid fa-pen"></i> Duzenle</a></li>
+                                </ul>
+                            </div>
+                    </li>
+            `;
             ul.insertAdjacentHTML("beforeend", li);
+
+            }
           }
         }
       }
@@ -122,6 +147,14 @@
             document.getElementById("btnAddNewTask").click();
           }
         });
+
+      for (let span of filters) {
+        span.addEventListener("click", function () {
+          document.querySelector("span.active").classList.remove("active");
+          span.classList.add("active");
+          displayTasks(span.id);
+        });
+      }
 
       function newTask(event) {
         if (taskInput.value == "") {
@@ -143,7 +176,7 @@
           }
 
           taskInput.value = "";
-          displayTasks();
+          displayTasks(document.querySelector("span.active").id);
         }
 
         event.preventDefault();
@@ -159,7 +192,7 @@
         }
 
         gorevListesi.splice(deletedId, 1);
-        displayTasks();
+        displayTasks(displayTasks(document.querySelector("span.active").id));
       }
 
       function editTask(taskId, taskName) {
@@ -182,19 +215,17 @@
         let durum;
         if (selectedTask.checked) {
           label.classList.add("checked");
-          durum = "completed"
+          durum = "completed";
         } else {
-            label.classList.remove("checked");
-            durum = "pending"
+          label.classList.remove("checked");
+          durum = "pending";
         }
 
         for (let gorev of gorevListesi) {
-            if(gorev.id == selectedTask.id) {
-                gorev.durum = durum;
-            }
+          if (gorev.id == selectedTask.id) {
+            gorev.durum = durum;
+          }
         }
-        console.log(gorevListesi);
-        // console.log(selectedTask.parentElement.lastElementChild);
       }
     </script>
   </body>
