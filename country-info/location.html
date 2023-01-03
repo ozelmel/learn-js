@@ -13,6 +13,9 @@
         #details {
             opacity: 0;
         }
+        #loading {
+            display: none;
+        }
     </style>
     <title>Document</title>
 </head>
@@ -31,6 +34,9 @@
                 </div>
             </div>
         </div>
+        <div id="loading" class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
         <div id="details">        
             <div class="card mb-3" >
                 <div class="card-header">Arama Sonucu</div>
@@ -56,17 +62,20 @@
     document.querySelector("#btnSearch").addEventListener("click", () => {
         let text = document.querySelector("#txtSearch").value;
         document.querySelector("#details").style.opacity = 0;
+        document.querySelector("#loading").style.display = "block";
         getCountry(text);
     });
 
     document.querySelector("#btnLocation").addEventListener("click", () => {
         if(navigator.geolocation) {
+            document.querySelector("#loading").style.display = "block";
             navigator.geolocation.getCurrentPosition(onSuccess, onError);
         }
     });
 
     function onError(err) {
         console.log(err);
+        document.querySelector("#loading").style.display = "none";
     }
 
     async function onSuccess(position) {
@@ -74,7 +83,7 @@
         let lng = position.coords.longitude;
 
         // api, google, opencagedata
-        // const api_key = "<api_anahtar_bilginiz_gelecek>";
+        const api_key = "<api_anahtar_bilginiz_gelecek>";
         const url = `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lng}&key=${api_key}`;
 
         const response = await fetch(url);
@@ -108,7 +117,8 @@
         }
     }
 
-    function renderCountry(data) {        
+    function renderCountry(data) {     
+        document.querySelector("#loading").style.display = "none";
         document.querySelector("#country-details").innerHTML = "";
         document.querySelector("#neighbors").innerHTML = "";
        
@@ -162,6 +172,7 @@
     }
    
     function renderError(err) {
+        document.querySelector("#loading").style.display = "none";
         const html = `
             <div class="alert alert-danger">
                 ${err.message}
